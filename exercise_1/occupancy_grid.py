@@ -13,6 +13,22 @@ def occupancy_grid(sdf_function, resolution):
     """
 
     # ###############
-    # TODO: Implement
-    raise NotImplementedError
+    x = np.linspace(-1, 1, resolution)
+    y = np.linspace(-1, 1, resolution)
+    z = np.linspace(-1, 1, resolution)
+    X, Y, Z = np.meshgrid(x, y, z, indexing='ij')
+
+    # Reshape the grid to a list of points
+    points = np.vstack([X.ravel(), Y.ravel(), Z.ravel()]).T  # Shape: (resolution^3, 3)
+
+    # Apply sdf_function to all points in a batch
+    sdf_values = np.array([sdf_function(p[0], p[1], p[2]) for p in points])
+
+    # Reshape sdf_values back to a 3D grid and create occupancy grid
+    sdf_grid = sdf_values.reshape((resolution, resolution, resolution))
+    occupancy_grid = (sdf_grid < 0).astype(int)
+
+    return occupancy_grid
+
+
     # ###############
