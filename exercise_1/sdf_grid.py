@@ -14,5 +14,13 @@ def sdf_grid(sdf_function, resolution):
 
     # ###############
     # TODO: Implement
-    raise NotImplementedError
-    # ###############
+    grird = np.zeros((resolution, resolution, resolution))
+    x = np.linspace(-1, 1, resolution)
+    y = np.linspace(-1, 1, resolution)
+    z = np.linspace(-1, 1, resolution)
+    for i in range(resolution):
+        for j in range(resolution):
+            for k in range(resolution):
+                grird[i, j, k] = sdf_function(x[i], y[j], z[k])
+
+    return grird
