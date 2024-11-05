@@ -150,7 +150,12 @@ def compute_cube_index(cube: np.array, isolevel=0.) -> int:
 
     # ###############
     # TODO: Implement
-    raise NotImplementedError
+    cube_index = 0
+    for index, vert in np.ndenumerate(cube):
+        cube_index = cube_index | ((vert < isolevel) << index[0])
+    return cube_index
+
+    #raise NotImplementedError
     # ###############
 
 
