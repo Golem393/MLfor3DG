@@ -159,6 +159,15 @@ def compute_cube_index(cube: np.array, isolevel=0.) -> int:
     # ###############
 
 
+def get_point_offset(point_id: int) -> np.array:
+    return np.array([point_id % 4 == 1 or point_id % 4 == 2, (point_id % 4 == 2 or point_id % 4 == 3), int(point_id / 4)])
+
+def get_edge_point_ids(edge_id: int) -> np.array:
+    if edge_id < 8:
+        return np.array([edge_id, (edge_id + 1) % 4 + 4 * (int(edge_id / 4))])
+    else:
+        return np.array([edge_id % 4, edge_id % 4 + 4])
+
 def marching_cubes(sdf: np.array) -> tuple:
     """
     Implements Marching Cubes. Using the incoming sdf grid, do the following for each cube:
@@ -168,11 +177,25 @@ def marching_cubes(sdf: np.array) -> tuple:
     :param sdf: A cubic, regular grid containing SDF values
     :return: A tuple with (1) a numpy array of vertices (nx3) and (2) a numpy array of faces (mx3)
     """
-
-    # ###############
-    # TODO: Implement
-    raise NotImplementedError
-    # ###############
+    vertex_list = np.empty((0, 3))
+    face_list = np.empty((0, 3), dtype=int)
+    for i in range (np.shape(sdf)[0] - 1):
+        for j in range(np.shape(sdf)[1] - 1):
+            for k in range(np.shape(sdf)[2] - 1):
+                cube = np.array([sdf[i + get_point_offset(pid)[0], j + get_point_offset(pid)[1], k + get_point_offset(pid)[2]] for pid in range(8)])
+                cube_index = compute_cube_index(cube)
+                triangle_edges = triangle_table[cube_index]
+                for triangle_id in range(int(len(triangle_edges) / 3)):
+                    if triangle_edges[3 * triangle_id] != -1:
+                        for edge_id in range(3):
+                            edge_points = get_edge_point_ids(edge_id)
+                            p_cor = [np.array([i,j,k]) + get_point_offset(edge_points[pid]) for pid in range(2)]
+                            edge_point = vertex_interpolation(p_cor[0], p_cor[1], np.array([sdf[p_cor[0][ax]] for ax in range(3)]), np.array([sdf[p_cor[1][ax]] for ax in range(3)]))
+                            vertex_list = np.vstack((vertex_list, [edge_point]))
+                        face_list = np.vstack((face_list, np.array([vertex_list.shape[0] - 3, vertex_list.shape[0] - 2, vertex_list.shape[0] - 1])))
+    print(vertex_list)
+    print(face_list)
+    return vertex_list, face_list
 
 
 def vertex_interpolation(p_1, p_2, v_1, v_2, isovalue=0.):
