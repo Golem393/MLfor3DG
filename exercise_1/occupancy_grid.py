@@ -13,22 +13,30 @@ def occupancy_grid(sdf_function, resolution):
     """
 
     # ###############
+    # Generate the x, y, z coordinates using broadcasting
+    # Create coordinate arrays for the x, y, and z axes
     x = np.linspace(-1, 1, resolution)
     y = np.linspace(-1, 1, resolution)
     z = np.linspace(-1, 1, resolution)
-    X, Y, Z = np.meshgrid(x, y, z, indexing='ij')
 
-    # Reshape the grid to a list of points
-    points = np.vstack([X.ravel(), Y.ravel(), Z.ravel()]).T  # Shape: (resolution^3, 3)
+    # Create a meshgrid of coordinates for all the points in the grid
+    xx, yy, zz = np.meshgrid(x, y, z, indexing='ij')
 
-    # Apply sdf_function to all points in a batch
-    sdf_values = np.array([sdf_function(p[0], p[1], p[2]) for p in points])
+    # Stack the coordinates together into a single array (each row is a point in 3D space)
+    points = np.vstack([xx.ravel(), yy.ravel(), zz.ravel()]).T  # Shape: (resolution^3, 3)
 
-    # Reshape sdf_values back to a 3D grid and create occupancy grid
+    # Extract the x, y, z components for the batch call
+    x_batch = points[:, 0]
+    y_batch = points[:, 1]
+    z_batch = points[:, 2]
+
+    # Use the sdf_function to get the signed distance for each point
+    sdf_values = sdf_function(x_batch, y_batch, z_batch)
+
+    # Reshape the sdf values back to a 3D grid with shape (resolution, resolution, resolution)
     sdf_grid = sdf_values.reshape((resolution, resolution, resolution))
+
+    # Create the occupancy grid: 1 if inside the shape (SDF < 0), 0 otherwise (SDF >= 0)
     occupancy_grid = (sdf_grid < 0).astype(int)
 
     return occupancy_grid
-
-
-    # ###############
