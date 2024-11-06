@@ -11,19 +11,20 @@ def sample_point_cloud(vertices, faces, n_points):
     :return: sampled points, a numpy array of shape (n_points, 3)
 
     """
-    n_points_per_face = n_points // len(faces)
-    remaining_points = n_points % len(faces)
+    n_points_per_face = n_points // faces.shape[0]
+    remaining_points = n_points % faces.shape[0]
     points = np.empty((0, 3))
     for idx, face in enumerate(faces):
         n_per_face = n_points_per_face
         if idx < remaining_points:
             n_per_face += 1
         for _ in range(n_per_face):
-            r_1 = np.random.rand(0,1)
-            r_2 = np.random.rand(0,1)
+            r_1 = np.random.rand()
+            r_2 = np.random.rand()
             u = 1 - np.sqrt(r_1)
             v = np.sqrt(r_1) * (1 - r_2)
             w  = np.sqrt(r_1) * r_2
             new_point = u * vertices[face[0]] + v * vertices[face[1]] + w * vertices[face[2]]
             points = np.vstack([points, new_point])
+    return points
     # ###############
