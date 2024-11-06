@@ -21,6 +21,24 @@ def procrustes_align(pc_x, pc_y):
     # R and t should now contain the rotation (shape 3x3) and translation (shape 3,)
     # TODO: Your implementation ends here ###############
 
+    # 1. Get centered pc_x and centered pc_y
+    center_x = get_centeriod(pc_x)  # Should be shape (3,)
+    center_y = get_centeriod(pc_y)  # Should be shape (3,)
+    centered_pc_x = pc_x - center_x
+    centered_pc_y = pc_y - center_y
+
+    # 2. Reshape centered_pc_x and centered_pc_y to 3xN
+    X = centered_pc_x.T  # Shape 3xN
+    Y = centered_pc_y.T  # Shape 3xN
+
+    # 3. Estimate rotation using SVD
+    H = np.matmul(X, Y.T)  # Cross-covariance matrix
+    U, S, VT = np.linalg.svd(H)
+    R = np.matmul(VT.T, U.T)
+
+    # 4. estimate translation
+    t = center_y - np.matmul(R, center_x)
+
     t_broadcast = np.broadcast_to(t[:, np.newaxis], (3, pc_x.shape[0]))
     print('Procrustes Aligment Loss: ', np.abs((np.matmul(R, pc_x.T) + t_broadcast) - pc_y.T).mean())
 
@@ -36,3 +54,11 @@ def load_correspondences():
     path_x = (Path(__file__).parent / "resources" / "points_input.obj").absolute()
     path_y = (Path(__file__).parent / "resources" / "points_target.obj").absolute()
     return load_obj_as_np(path_x), load_obj_as_np(path_y)
+
+def get_centeriod(pc):
+    """
+    get the centeriod of a point cloud
+    :param pc: Nx3 point cloud
+    :return: 3D centeriod
+    """
+    return np.mean(pc, axis=0)
