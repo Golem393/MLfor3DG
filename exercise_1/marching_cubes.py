@@ -190,7 +190,7 @@ def marching_cubes(sdf: np.array) -> tuple:
                         for edge_id in range(3):
                             edge_points = get_edge_point_ids(triangle_edges[3 * triangle_id + edge_id])
                             p_cor = [np.array([i,j,k]) + get_point_offset(edge_points[pid]) for pid in range(2)]
-                            edge_point = vertex_interpolation(p_cor[0], p_cor[1], np.array([sdf[p_cor[0][ax]] for ax in range(3)]), np.array([sdf[p_cor[1][ax]] for ax in range(3)]))
+                            edge_point = vertex_interpolation(p_cor[0], p_cor[1], sdf[tuple(p_cor[0])], sdf[tuple(p_cor[1])])
                             vertex_list = np.vstack((vertex_list, [edge_point]))
                         face_list = np.vstack((face_list, np.array([vertex_list.shape[0] - 3, vertex_list.shape[0] - 2, vertex_list.shape[0] - 1])))
     return vertex_list, face_list
@@ -206,7 +206,7 @@ def vertex_interpolation(p_1, p_2, v_1, v_2, isovalue=0.):
     :param isovalue: The iso value, always 0 in our case
     :return: A single point
     """
-    return p_1 + (p_2 - p_1) / 2.
+    return p_1 + ((p_2 - p_1) * (isovalue - v_1)) / (v_2 - v_1)
     # ###############
     # TODO: Implement the vertex interpolation to have smoother surfaces
     # ###############
