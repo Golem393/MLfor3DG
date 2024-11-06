@@ -188,13 +188,11 @@ def marching_cubes(sdf: np.array) -> tuple:
                 for triangle_id in range(int(len(triangle_edges) / 3)):
                     if triangle_edges[3 * triangle_id] != -1:
                         for edge_id in range(3):
-                            edge_points = get_edge_point_ids(edge_id)
+                            edge_points = get_edge_point_ids(triangle_edges[3 * triangle_id + edge_id])
                             p_cor = [np.array([i,j,k]) + get_point_offset(edge_points[pid]) for pid in range(2)]
                             edge_point = vertex_interpolation(p_cor[0], p_cor[1], np.array([sdf[p_cor[0][ax]] for ax in range(3)]), np.array([sdf[p_cor[1][ax]] for ax in range(3)]))
                             vertex_list = np.vstack((vertex_list, [edge_point]))
                         face_list = np.vstack((face_list, np.array([vertex_list.shape[0] - 3, vertex_list.shape[0] - 2, vertex_list.shape[0] - 1])))
-    print(vertex_list)
-    print(face_list)
     return vertex_list, face_list
 
 
