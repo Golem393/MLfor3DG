@@ -14,13 +14,24 @@ def sdf_grid(sdf_function, resolution):
 
     # ###############
     # TODO: Implement
-    grird = np.zeros((resolution, resolution, resolution))
     x = np.linspace(-1, 1, resolution)
     y = np.linspace(-1, 1, resolution)
     z = np.linspace(-1, 1, resolution)
-    for i in range(resolution):
-        for j in range(resolution):
-            for k in range(resolution):
-                grird[i, j, k] = sdf_function(x[i], y[j], z[k])
+    
+    xx, yy, zz = np.meshgrid(x, y, z, indexing='ij')
 
-    return grird
+    # Stack the coordinates together into a single array (each row is a point in 3D space)
+    points = np.vstack([xx.ravel(), yy.ravel(), zz.ravel()]).T  # Shape: (resolution^3, 3)
+
+    # Extract the x, y, z components for the batch call
+    x_batch = points[:, 0]
+    y_batch = points[:, 1]
+    z_batch = points[:, 2]
+
+    # Use the sdf_function to get the signed distance for each point
+    sdf_values = sdf_function(x_batch, y_batch, z_batch)
+
+    # Reshape the sdf values back to a 3D grid with shape (resolution, resolution, resolution)
+    sdf_grid = sdf_values.reshape((resolution, resolution, resolution))
+
+    return sdf_grid
